@@ -1,0 +1,73 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QDebug>
+#include <qcustomplot.h>
+
+MainWindow::MainWindow(QWidget *parent) :
+	QMainWindow(parent),
+	ui(new Ui::MainWindow) {
+	ui->setupUi(this);
+
+	//settings
+	string fileName = "events.xml";
+
+	//load data
+	dataH = new DataHandler();
+	dataH->parseXML(fileName);
+	dataH->sortByDateAsc();
+	dataH->firstDate = DataHandler::getEventsFirstDate(dataH->events);
+	dataH->lastDate = DataHandler::getEventsLastDate(dataH->events);
+
+	//set the plots
+	configurePlots();
+
+	//plot initial data
+	changePlottedEvents(dataH->firstDate, dataH->lastDate, 0, 10);
+	changePredictedEvents(dataH->firstDate, dataH->lastDate, 0, 10);
+}
+
+MainWindow::~MainWindow() {
+	delete ui;
+}
+
+void MainWindow::configurePlots() {
+	QCPBars *plotted = new QCPBars(ui->plot1->xAxis, ui->plot2->yAxis);
+
+	plotted->setAntialiased(false);
+	plotted->setName("Filtered past events");
+	plotted->setPen(QPen(QColor(170, 170, 255)));
+	plotted->setBrush(QColor(255, 170, 170));
+
+	QBrush *backgroundBrush = new QBrush(QColor(0, 10, 0));
+	ui->plot1->setBackground(*backgroundBrush);
+
+	QBrush *foregroundPen = new QPen(QColor(255, 255, 255));
+	ui->plot1->xAxis->setBasePen(*foregroundPen);
+
+	ui->plot1->xAxis->grid()->setVisible(false);
+	ui->plot1->yAxis->grid()->setVisible(false);
+}
+
+void MainWindow::changePlottedEvents(QDate d1, QDate d2, double mag1, double mag2) {
+	dataH->plottedEventsStartDate = d1;
+	dataH->plottedEventsEndDate = d2;
+	dataH->plottedEventsMinMagnitude = mag1;
+	dataH->plottedEventsMaxMagnitude = mag2;
+
+	dataH->plottedEvents = DataHandler::getFilteredEvents(dataH->events, d1, d2);
+	dataH->plottedEvents = DataHandler::getFilteredEvents(dataH->plottedEvents, mag1, mag2);
+
+	dataH->plottedEventsX = DataHandler::getEventsX(dataH->plottedEvents);
+	dataH->plottedEventsY = DataHandler::getEventsY(dataH->plottedEvents);
+
+	qDebug() << "Plotted events changed!";
+}
+
+void MainWindow::changePredictedEvents(QDate d1, QDate d2, double mag1, double mag2) {
+	dataH->predictedEventsStartDate = d1;
+	dataH->predictedEventsEndDate = d2;
+	dataH->predictedEventsMinMagnitude = mag1;
+	dataH->predictedEventsMaxMagnitude = mag2;
+
+	qDebug() << "Predicted events changed!";
+}
