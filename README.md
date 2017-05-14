@@ -7,4 +7,4 @@ Built using Qt in Qt Creator.
 Copyright (C) 2017 Cristescu I. Bogdan Ion  
 djbogdy3x@yahoo.com  
 GNU Affero General Public License  
-see https://github.com/DJakarta/inverse-power-method
+see https://github.com/DJakarta/time-series-earthquake-prediction
